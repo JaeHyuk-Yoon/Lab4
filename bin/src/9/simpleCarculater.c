@@ -14,33 +14,39 @@ void quit(GtkWidget *window, gpointer data)
 	gtk_main_quit();
 }
 
-gchar* carculate(gchar *text)
+int carculate(const gchar *str)
 {
-	const gchar *num = "";
+	char onenum[255];
 	int result = 0;
 	int temp = 0;
 	int i = 0;
+	int j = 0;
 	int oper = 0;
 	int ascii = 0;
 	
-	while (text != NULL) {
-		ascii = text;
+	memset(onenum, 0,255);
+	
+	while (*str) {
 		
-		if(ascii >= 48 && ascii<=57)
+		ascii = (int)*str;
+		char cnum = *str;
+		
+		if(ascii >= 48 && ascii <= 57)
 		{
-			num = strcat(num, text);
+			onenum[j] = cnum;
+			j++;
 			
 		}
 		else if(ascii == 43 || ascii == 45 ||ascii == 42 ||ascii == 47) //사칙연산인 경우
 		{
-			if(count == 0)
+			if(i == 0)
 			{
-				result = atoi(num);
+				result = atoi(onenum);
 				oper = ascii;
 			}
 			else
 			{
-				temp = atoi(num);
+				temp = atoi(onenum);
 				if( oper == 43) result = result + temp;
 				if( oper == 45) result = result - temp;
 				if( oper == 42) result = result * temp;
@@ -48,19 +54,21 @@ gchar* carculate(gchar *text)
 				oper = ascii;
 			}
 			
-			num = "";
 			i++;
+			
+			memset(onenum, 0,255);
+			j=0;
 		}
-		else //문자열 끝난경우
-		{
-			temp = atoi(num);
-			if( oper == 43) result = result + temp;
-			if( oper == 45) result = result - temp;
-			if( oper == 42) result = result * temp;
-			if( oper == 47) result = result / temp;
-		}
+		*str++;
 	}
-	return (char)result;
+	
+	temp = atoi(onenum);
+	if( oper == 43) result = result + temp;
+	if( oper == 45) result = result - temp;
+	if( oper == 42) result = result * temp;
+	if( oper == 47) result = result / temp;
+	
+	return result;
 }
 
 
@@ -68,21 +76,25 @@ void insert_btn(GtkWidget *button, gpointer data)
 {
 	const gchar *num = gtk_button_get_label(button);
 	const gchar *text = gtk_label_get_text(GTK_LABEL( (GtkWidget *) data));
+	char sbuffer[255] = ""; 
 	
 	if(count == 0)
 	{	
 		gtk_label_set_text(GTK_LABEL( (GtkWidget *) data), num);
 		count++;
 	}
-	else if(strcmp(num,"="))
+	else if(!strcmp(num,"="))
 	{	
-		//const gchar *result = carculate(text);
-		//gtk_label_set_text(GTK_LABEL( (GtkWidget *) data), result);
+		int iresult = carculate(text);
+		
+		sprintf(sbuffer, "결과 : %d", iresult);
+		
+		gtk_label_set_text(GTK_LABEL( (GtkWidget *) data), sbuffer);
 		count=0;
 	}
 	else
 	{
-		text = strcat(text, num);
+		strcat(text, num);
 	
 		gtk_label_set_text(GTK_LABEL( (GtkWidget *) data), text);
 	}
